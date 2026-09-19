@@ -1,6 +1,8 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const db = require("../db");
+const crypto = require("crypto");
+const { sendVerificationEmail } = require("../utils/email");
 
 const register = async (req, res) => {
     try {
@@ -35,6 +37,26 @@ const register = async (req, res) => {
              RETURNING id, name, email, role, email_verified, created_at`,
             [name, email, passwordHash]
         );
+        const verificationToken = crypto.randomBytes(32).toString("hex");
+
+const expiresAt = new Date();
+expiresAt.setHours(expiresAt.getHours() + 24);
+
+await db.query(
+    `INSERT INTO email_verification_tokens
+        (user_id, token, expires_at)
+     VALUES ($1, $2, $3)`,
+    [
+        result.rows[0].id,
+        verificationToken,
+        expiresAt
+    ]
+);
+
+await sendVerificationEmail(
+    email,
+    verificationToken
+);
 
         res.status(201).json({
             message: "User registered successfully",
@@ -115,8 +137,65 @@ const login = async (req, res) => {
         });
     }
 };
+const verifyEmail = async (req, res) => {
+    try {
+        const { token } = req.query;
+
+        if (!token) {
+            return res.status(400).json({
+                message: "Verification token is required"
+            });
+        }
+
+        const tokenResult = await db.query(
+            `SELECT id, user_id, expires_at
+             FROM email_verification_tokens
+             WHERE token = $1`,
+            [token]
+        );
+
+        if (tokenResult.rows.length === 0) {
+            return res.status(400).json({
+                message: "Invalid verification token"
+            });
+        }
+
+        const verificationToken = tokenResult.rows[0];
+
+        if (new Date() > new Date(verificationToken.expires_at)) {
+            return res.status(400).json({
+                message: "Verification token has expired"
+            });
+        }
+
+        await db.query(
+            `UPDATE users
+             SET email_verified = true
+             WHERE id = $1`,
+            [verificationToken.user_id]
+        );
+
+        await db.query(
+            `DELETE FROM email_verification_tokens
+             WHERE id = $1`,
+            [verificationToken.id]
+        );
+
+        res.json({
+            message: "Email verified successfully"
+        });
+
+    } catch (error) {
+        console.error("Email verification error:", error);
+
+        res.status(500).json({
+            message: "Server error"
+        });
+    }
+};
 
 module.exports = {
     register,
-    login
+    login,
+    verifyEmail
 };
