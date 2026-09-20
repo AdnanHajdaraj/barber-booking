@@ -127,9 +127,34 @@ const deleteDayOff = async (req, res) => {
         });
     }
 };
+const getPublicDaysOff = async (req, res) => {
+    try {
+        const { barberId } = req.params;
+
+        const result = await db.query(
+            `SELECT date::text AS date, reason
+             FROM days_off
+             WHERE barber_id = $1
+             ORDER BY date`,
+            [barberId]
+        );
+
+        res.json({
+            days_off: result.rows
+        });
+
+    } catch (error) {
+        console.error("Get public days off error:", error);
+
+        res.status(500).json({
+            message: "Server error"
+        });
+    }
+};
 
 module.exports = {
     createDayOff,
     getDaysOff,
-    deleteDayOff
+    deleteDayOff,
+    getPublicDaysOff
 };

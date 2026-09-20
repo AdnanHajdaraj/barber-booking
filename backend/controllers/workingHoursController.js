@@ -102,7 +102,32 @@ const getWorkingHours = async (req, res) => {
         });
     }
 };
+const getPublicWorkingHours = async (req, res) => {
+    try {
+        const { barberId } = req.params;
+
+        const result = await db.query(
+            `SELECT day_of_week, start_time, end_time, is_working
+             FROM working_hours
+             WHERE barber_id = $1
+             ORDER BY day_of_week`,
+            [barberId]
+        );
+
+        res.json({
+            working_hours: result.rows
+        });
+
+    } catch (error) {
+        console.error("Get public working hours error:", error);
+
+        res.status(500).json({
+            message: "Server error"
+        });
+    }
+};
 module.exports = {
     setWorkingHours,
-    getWorkingHours
+    getWorkingHours,
+    getPublicWorkingHours
 };

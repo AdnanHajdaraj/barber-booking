@@ -262,48 +262,68 @@ const getAvailableSlots = async (req, res) => {
 
         const availableSlots = [];
 
-        const start = new Date(`${date}T${workingHours.start_time}`);
-        const end = new Date(`${date}T${workingHours.end_time}`);
+        const start = new Date(
+            `${date}T${workingHours.start_time}`
+        );
 
-        const slotDuration = serviceDuration + 5;
+        const end = new Date(
+            `${date}T${workingHours.end_time}`
+        );
+
+        // Appointment start times are always 30 minutes apart
+        const slotInterval = 30;
 
         for (
             let current = new Date(start);
             current < end;
-            current.setMinutes(current.getMinutes() + slotDuration)
+            current.setMinutes(
+                current.getMinutes() + slotInterval
+            )
         ) {
             const slotStart = new Date(current);
-            const slotEnd = new Date(current);
-            slotEnd.setMinutes(slotEnd.getMinutes() + serviceDuration);
 
+            const slotEnd = new Date(current);
+            slotEnd.setMinutes(
+                slotEnd.getMinutes() + serviceDuration
+            );
+
+            // Service must finish before closing time
             if (slotEnd > end) {
                 break;
             }
 
-            const startTime = slotStart.toTimeString().slice(0, 5);
-            const endTime = slotEnd.toTimeString().slice(0, 5);
+            const startTime = slotStart
+                .toTimeString()
+                .slice(0, 5);
+
+            const endTime = slotEnd
+                .toTimeString()
+                .slice(0, 5);
 
             // Check break overlap
-            const overlapsBreak = breaksResult.rows.some((breakTime) => {
-                return (
-                    startTime < breakTime.end_time &&
-                    endTime > breakTime.start_time
-                );
-            });
+            const overlapsBreak = breaksResult.rows.some(
+                (breakTime) => {
+                    return (
+                        startTime < breakTime.end_time &&
+                        endTime > breakTime.start_time
+                    );
+                }
+            );
 
             if (overlapsBreak) {
                 continue;
             }
 
             // Check appointment overlap
-            const overlapsAppointment = appointmentsResult.rows.some(
-                (appointment) => {
-                    return (
-                        startTime < appointment.end_time &&
-                        endTime > appointment.start_time
-                    );
-                }
-            );
+            const overlapsAppointment =
+                appointmentsResult.rows.some(
+                    (appointment) => {
+                        return (
+                            startTime < appointment.end_time &&
+                            endTime > appointment.start_time
+                        );
+                    }
+                );
 
             if (overlapsAppointment) {
                 continue;
