@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 function Dashboard() {
     const [message, setMessage] = useState("Loading...");
     const [appointments, setAppointments] = useState([]);
+    const [barberAppointments, setBarberAppointments] = useState([]);
     const [workingHours, setWorkingHours] = useState([]);
     const [daysOff, setDaysOff] = useState([]);
     const [dayOffStart, setDayOffStart] = useState("");
@@ -108,6 +109,24 @@ function Dashboard() {
                     if (servicesResponse.ok) {
                         setServices(
                             servicesData.services || []
+                        );
+                    }
+
+                    const barberAppointmentsResponse = await fetch(
+                        "http://localhost:5000/api/appointments/barber",
+                        {
+                            headers: {
+                                Authorization: `Bearer ${token}`
+                            }
+                        }
+                    );
+
+                    const barberAppointmentsData =
+                        await barberAppointmentsResponse.json();
+
+                    if (barberAppointmentsResponse.ok) {
+                        setBarberAppointments(
+                            barberAppointmentsData.appointments || []
                         );
                     }
                 }
@@ -700,7 +719,7 @@ function Dashboard() {
         setWorkingHours((currentHours) =>
             currentHours.map((day) =>
                 Number(day.day_of_week) ===
-                Number(dayOfWeek)
+                    Number(dayOfWeek)
                     ? {
                         ...day,
                         [field]: value
@@ -714,7 +733,7 @@ function Dashboard() {
         setWorkingHours((currentHours) =>
             currentHours.map((day) =>
                 Number(day.day_of_week) ===
-                Number(dayOfWeek)
+                    Number(dayOfWeek)
                     ? {
                         ...day,
                         is_working: !day.is_working
@@ -820,7 +839,7 @@ function Dashboard() {
                     currentAppointments.map(
                         (appointment) =>
                             appointment.id ===
-                            appointmentId
+                                appointmentId
                                 ? {
                                     ...appointment,
                                     status: "CANCELLED"
@@ -854,7 +873,7 @@ function Dashboard() {
     sortedDaysOff.forEach((dayOff) => {
         const lastGroup =
             groupedDaysOff[
-                groupedDaysOff.length - 1
+            groupedDaysOff.length - 1
             ];
 
         if (!lastGroup) {
@@ -908,6 +927,90 @@ function Dashboard() {
             {/* Barber dashboard */}
             {workingHours.length > 0 && (
                 <>
+                    {/* Appointments */}
+                    <section>
+                        <h2>Appointments</h2>
+
+                        {barberAppointments.length === 0 ? (
+                            <p>No appointments found.</p>
+                        ) : (
+                            barberAppointments.map((appointment) => (
+                                <div
+                                    key={appointment.id}
+                                    style={{
+                                        border: "1px solid #ccc",
+                                        padding: "15px",
+                                        marginBottom: "10px"
+                                    }}
+                                >
+                                    <h3>
+                                        {appointment.client_name}
+                                    </h3>
+
+                                    <p>
+                                        <strong>Email:</strong>{" "}
+                                        {appointment.client_email}
+                                    </p>
+
+                                    <p>
+                                        <strong>Service:</strong>{" "}
+                                        {appointment.service_name}
+                                    </p>
+
+                                    <p>
+                                        <strong>Date:</strong>{" "}
+                                        {appointment.appointment_date}
+                                    </p>
+
+                                    <p>
+                                        <strong>Time:</strong>{" "}
+                                        {appointment.start_time.slice(0, 5)}
+                                        {" – "}
+                                        {appointment.end_time.slice(0, 5)}
+                                    </p>
+
+                                    <p>
+                                        <strong>Price:</strong>{" "}
+                                        €{appointment.price}
+                                    </p>
+
+                                    <p>
+                                        <strong>Status:</strong>{" "}
+                                        {appointment.status}
+                                    </p>
+
+                                    {appointment.status === "CONFIRMED" && (
+                                        <div>
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    updateAppointmentStatus(
+                                                        appointment.id,
+                                                        "COMPLETED"
+                                                    )
+                                                }
+                                            >
+                                                Mark Completed
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    updateAppointmentStatus(
+                                                        appointment.id,
+                                                        "CANCELLED"
+                                                    )
+                                                }
+                                            >
+                                                Cancel Appointment
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            ))
+                        )}
+                    </section>
+
                     <section>
                         <h2>Working Hours</h2>
 
@@ -923,9 +1026,9 @@ function Dashboard() {
                                 <h3>
                                     {
                                         dayNames[
-                                            Number(
-                                                day.day_of_week
-                                            )
+                                        Number(
+                                            day.day_of_week
+                                        )
                                         ]
                                     }
                                 </h3>
@@ -1300,7 +1403,7 @@ function Dashboard() {
                                         <p>
                                             <strong>
                                                 {group.startDate ===
-                                                group.endDate
+                                                    group.endDate
                                                     ? group.startDate
                                                     : `${group.startDate} – ${group.endDate}`}
                                             </strong>
@@ -1470,9 +1573,9 @@ function Dashboard() {
                                             <strong>
                                                 {
                                                     dayNames[
-                                                        Number(
-                                                            breakItem.day_of_week
-                                                        )
+                                                    Number(
+                                                        breakItem.day_of_week
+                                                    )
                                                     ]
                                                 }
                                             </strong>
@@ -1597,23 +1700,35 @@ function Dashboard() {
                                         <strong>
                                             Status:
                                         </strong>{" "}
-                                        {
-                                            appointment.status
-                                        }
+                                        {appointment.status}
                                     </p>
 
-                                    {appointment.status ===
-                                        "CONFIRMED" && (
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                handleCancel(
-                                                    appointment.id
-                                                )
-                                            }
-                                        >
-                                            Cancel Appointment
-                                        </button>
+                                    {appointment.status === "CONFIRMED" && (
+                                        <div>
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    updateAppointmentStatus(
+                                                        appointment.id,
+                                                        "COMPLETED"
+                                                    )
+                                                }
+                                            >
+                                                Mark Completed
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    updateAppointmentStatus(
+                                                        appointment.id,
+                                                        "CANCELLED"
+                                                    )
+                                                }
+                                            >
+                                                Cancel Appointment
+                                            </button>
+                                        </div>
                                     )}
                                 </div>
                             )
