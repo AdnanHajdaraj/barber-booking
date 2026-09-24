@@ -4,7 +4,8 @@ const {
     getServices,
     updateService,
     updateServiceStatus,
-    getPublicServices
+    getPublicServices,
+    getAllPublicServices      // <-- add this
 } = require("../controllers/serviceController");
 
 const authenticateToken = require("../middleware/authMiddleware");
@@ -16,5 +17,8 @@ router.get("/", authenticateToken, getServices);
 router.put("/:id", authenticateToken, updateService);
 router.patch("/:id/status", authenticateToken, updateServiceStatus);
 
-router.get("/public/:barberId", getPublicServices);
+// Public routes (no auth)
+router.get("/public", getAllPublicServices);            // <-- new: ALL active services
+router.get("/public/:barberId", getPublicServices);     // existing: services for one barber
+
 module.exports = router;

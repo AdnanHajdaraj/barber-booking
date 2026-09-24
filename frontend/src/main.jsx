@@ -13,6 +13,8 @@ import Services from "./pages/Services";
 import Contact from "./pages/Contact";
 import Booking from "./pages/Booking";
 import Footer from "./components/Footer";
+import AddBarber from "./pages/AddBarber";
+
 
 
 function App() {
@@ -28,8 +30,11 @@ function App() {
                 <Route path="/booking" element={<Booking />} />
                 <Route path="/verify-email" element={<VerifyEmail />} />
                 <Route path="/login" element={<Login />} />
-                <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/register" element={<Register />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/dashboard/add-barber" element={<AddBarber />} />
+                
+                
             </Routes>
 
             <Footer />

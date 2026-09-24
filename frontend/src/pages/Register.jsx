@@ -1,15 +1,20 @@
 import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 function Register() {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [message, setMessage] = useState("");
+    const [status, setStatus] = useState(""); // "", "loading", "error", "success"
+
+    const navigate = useNavigate();
 
     const handleRegister = async (event) => {
         event.preventDefault();
 
         setMessage("Creating account...");
+        setStatus("loading");
 
         try {
             const response = await fetch(
@@ -31,69 +36,102 @@ function Register() {
 
             if (!response.ok) {
                 setMessage(data.message || "Registration failed.");
+                setStatus("error");
                 return;
             }
 
             setMessage(
                 "Registration successful! Please check your email to verify your account."
             );
+            
+            setStatus("success");
+
+            // Optional: send them to login after a beat
+            setTimeout(() => navigate("/login"), 2500);
         } catch (error) {
             console.error(error);
             setMessage("Unable to connect to the server.");
+            setStatus("error");
         }
     };
 
     return (
-        <div>
-            <h1>Register</h1>
+        <main className="page auth-page">
+            <div className="auth-card">
+                <header className="auth-head">
+                    <p className="eyebrow">Join the shop</p>
+                    <h1>Create your account</h1>
+                    <p className="auth-sub">
+                        Book appointments in seconds — no phone calls
+                        needed.
+                    </p>
+                </header>
 
-            <form onSubmit={handleRegister}>
-                <div>
-                    <label>Name</label>
-                    <br />
-                    <input
-                        type="text"
-                        value={name}
-                        onChange={(event) => setName(event.target.value)}
-                        required
-                    />
-                </div>
+                <form onSubmit={handleRegister} className="auth-form">
+                    <label className="field">
+                        <span>Name</span>
+                        <input
+                            type="text"
+                            value={name}
+                            onChange={(event) => setName(event.target.value)}
+                            autoComplete="name"
+                            placeholder="Your full name"
+                            required
+                        />
+                    </label>
 
-                <br />
+                    <label className="field">
+                        <span>Email</span>
+                        <input
+                            type="email"
+                            value={email}
+                            onChange={(event) => setEmail(event.target.value)}
+                            autoComplete="email"
+                            placeholder="you@example.com"
+                            required
+                        />
+                    </label>
 
-                <div>
-                    <label>Email</label>
-                    <br />
-                    <input
-                        type="email"
-                        value={email}
-                        onChange={(event) => setEmail(event.target.value)}
-                        required
-                    />
-                </div>
+                    <label className="field">
+                        <span>Password</span>
+                        <input
+                            type="password"
+                            value={password}
+                            onChange={(event) => setPassword(event.target.value)}
+                            autoComplete="new-password"
+                            placeholder="At least 8 characters"
+                            minLength={8}
+                            required
+                        />
+                    </label>
 
-                <br />
+                    {message && (
+                        <p
+                            className={`alert alert-${status || "info"}`}
+                            role="alert"
+                            aria-live="polite"
+                        >
+                            {message}
+                        </p>
+                    )}
 
-                <div>
-                    <label>Password</label>
-                    <br />
-                    <input
-                        type="password"
-                        value={password}
-                        onChange={(event) => setPassword(event.target.value)}
-                        required
-                    />
-                </div>
+                    <button
+                        type="submit"
+                        className="btn btn-lg btn-block"
+                        disabled={status === "loading" || status === "success"}
+                    >
+                        {status === "loading"
+                            ? "Creating account…"
+                            : "Register"}
+                    </button>
+                </form>
 
-                <br />
-
-                <button type="submit">
-                    Register
-                </button>
-            </form>
-
-            <p>{message}</p>
-        </div>
+                <p className="auth-foot">
+                    Already have an account?{" "}
+                    <Link to="/login">Sign in</Link>
+                </p>
+            </div>
+        </main>
     );
 }
 

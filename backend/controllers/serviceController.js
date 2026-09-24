@@ -218,11 +218,43 @@ const getPublicServices = async (req, res) => {
         });
     }
 };
+const getAllPublicServices = async (req, res) => {
+    try {
+        const result = await db.query(
+            `SELECT
+                s.id,
+                s.name,
+                s.description,
+                s.price,
+                s.duration,
+                b.id AS barber_id,
+                b.shop_name,
+                u.name AS barber_name
+             FROM services s
+             JOIN barbers b ON s.barber_id = b.id
+             JOIN users u ON b.user_id = u.id
+             WHERE s.active = true
+             ORDER BY b.shop_name, s.name`
+        );
+
+        res.json({
+            services: result.rows
+        });
+
+    } catch (error) {
+        console.error("Get all public services error:", error);
+
+        res.status(500).json({
+            message: "Server error"
+        });
+    }
+};
 
 module.exports = {
     createService,
     getServices,
     updateService,
     updateServiceStatus,
-    getPublicServices
+    getPublicServices,
+    getAllPublicServices
 };

@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 function Dashboard() {
     const [message, setMessage] = useState("Loading...");
+    const [isOwner, setIsOwner] = useState(false);
     const [appointments, setAppointments] = useState([]);
     const [barberAppointments, setBarberAppointments] = useState([]);
     const [workingHours, setWorkingHours] = useState([]);
@@ -47,7 +49,10 @@ function Dashboard() {
                     return;
                 }
 
+                // The protected endpoint returns the user directly.
+                // So `data.role` and `data.is_owner` are on the root.
                 setMessage("");
+                setIsOwner(data.user.is_owner === true);
 
                 if (data.user.role === "CLIENT") {
                     const appointmentsResponse = await fetch(
@@ -107,9 +112,7 @@ function Dashboard() {
                         await servicesResponse.json();
 
                     if (servicesResponse.ok) {
-                        setServices(
-                            servicesData.services || []
-                        );
+                        setServices(servicesData.services || []);
                     }
 
                     const barberAppointmentsResponse = await fetch(
@@ -793,7 +796,74 @@ function Dashboard() {
             alert("Unable to connect to the server.");
         }
     };
+    const updateAppointmentStatus = async (appointmentId, newStatus) => {
+        const token = localStorage.getItem("token");
 
+        try {
+            const response = await fetch(
+                `http://localhost:5000/api/appointments/${appointmentId}/status`,
+                {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({ status: newStatus }),
+                }
+            );
+
+            const data = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                setMessage(data.message || "Could not update appointment.");
+                return;
+            }
+
+            // Update local state so the badge changes without a refetch
+            setBarberAppointments((prev) =>
+                prev.map((a) =>
+                    a.id === appointmentId ? { ...a, status: newStatus } : a
+                )
+            );
+            setMessage("Appointment marked as completed.");
+        } catch (error) {
+            console.error(error);
+            setMessage("Unable to connect to the server.");
+        }
+    };
+
+    const cancelAppointment = async (appointmentId) => {
+        const token = localStorage.getItem("token");
+
+        try {
+            const response = await fetch(
+                `http://localhost:5000/api/appointments/${appointmentId}/cancel`,
+                {
+                    method: "PATCH",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            const data = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                setMessage(data.message || "Could not cancel appointment.");
+                return;
+            }
+
+            setAppointments((prev) =>
+                prev.map((a) =>
+                    a.id === appointmentId ? { ...a, status: "CANCELLED" } : a
+                )
+            );
+            setMessage("Appointment cancelled.");
+        } catch (error) {
+            console.error(error);
+            setMessage("Unable to connect to the server.");
+        }
+    };
     const handleCancel = async (appointmentId) => {
         const token = localStorage.getItem("token");
 
@@ -917,822 +987,541 @@ function Dashboard() {
             });
         }
     });
-
+    function StatusBadge({ status }) {
+        const map = {
+            CONFIRMED: "pill-info",
+            COMPLETED: "pill-success",
+            CANCELLED: "pill-danger",
+            PENDING: "pill-warn",
+        };
+        return (
+            <span className={`pill ${map[status] || "pill-muted"}`}>
+                {status}
+            </span>
+        );
+    }
     return (
-        <main>
-            <h1>Dashboard</h1>
+        <main className="page dashboard">
+            <header className="page-hero">
+                <p className="eyebrow">
+                    {workingHours.length > 0 ? "Barber panel" : "My account"}
+                </p>
+                <h1>Dashboard</h1>
+                {isOwner && (
+                    <div className="dash-actions">
+                        <Link to="/dashboard/add-barber" className="btn">
+                            + Add Barber
+                        </Link>
+                    </div>
+                )}
+            </header>
 
-            {message && <p>{message}</p>}
+            {message && <p className="alert">{message}</p>}
 
-            {/* Barber dashboard */}
+            {/* ============ BARBER DASHBOARD ============ */}
             {workingHours.length > 0 && (
                 <>
                     {/* Appointments */}
-                    <section>
-                        <h2>Appointments</h2>
+                    <section className="dash-section">
+                        <div className="section-head">
+                            <h2>Appointments</h2>
+                            <span className="count-badge">
+                                {barberAppointments.length}
+                            </span>
+                        </div>
 
                         {barberAppointments.length === 0 ? (
-                            <p>No appointments found.</p>
+                            <p className="hint">No appointments found.</p>
                         ) : (
-                            barberAppointments.map((appointment) => (
-                                <div
-                                    key={appointment.id}
-                                    style={{
-                                        border: "1px solid #ccc",
-                                        padding: "15px",
-                                        marginBottom: "10px"
-                                    }}
-                                >
-                                    <h3>
-                                        {appointment.client_name}
-                                    </h3>
+                            <div className="appt-grid">
+                                {barberAppointments.map((appointment) => (
+                                    <article key={appointment.id} className="appt-card">
+                                        <header className="appt-head">
+                                            <h3>{appointment.client_name}</h3>
+                                            <StatusBadge status={appointment.status} />
+                                        </header>
 
-                                    <p>
-                                        <strong>Email:</strong>{" "}
-                                        {appointment.client_email}
-                                    </p>
+                                        <dl className="appt-meta">
+                                            <div>
+                                                <dt>Email</dt>
+                                                <dd>{appointment.client_email}</dd>
+                                            </div>
+                                            <div>
+                                                <dt>Service</dt>
+                                                <dd>{appointment.service_name}</dd>
+                                            </div>
+                                            <div>
+                                                <dt>Date</dt>
+                                                <dd>{appointment.appointment_date}</dd>
+                                            </div>
+                                            <div>
+                                                <dt>Time</dt>
+                                                <dd>
+                                                    {appointment.start_time.slice(0, 5)} –{" "}
+                                                    {appointment.end_time.slice(0, 5)}
+                                                </dd>
+                                            </div>
+                                            <div>
+                                                <dt>Price</dt>
+                                                <dd className="price">€{appointment.price}</dd>
+                                            </div>
+                                        </dl>
 
-                                    <p>
-                                        <strong>Service:</strong>{" "}
-                                        {appointment.service_name}
-                                    </p>
-
-                                    <p>
-                                        <strong>Date:</strong>{" "}
-                                        {appointment.appointment_date}
-                                    </p>
-
-                                    <p>
-                                        <strong>Time:</strong>{" "}
-                                        {appointment.start_time.slice(0, 5)}
-                                        {" – "}
-                                        {appointment.end_time.slice(0, 5)}
-                                    </p>
-
-                                    <p>
-                                        <strong>Price:</strong>{" "}
-                                        €{appointment.price}
-                                    </p>
-
-                                    <p>
-                                        <strong>Status:</strong>{" "}
-                                        {appointment.status}
-                                    </p>
-
-                                    {appointment.status === "CONFIRMED" && (
-                                        <div>
-                                            <button
-                                                type="button"
-                                                onClick={() =>
-                                                    updateAppointmentStatus(
-                                                        appointment.id,
-                                                        "COMPLETED"
-                                                    )
-                                                }
-                                            >
-                                                Mark Completed
-                                            </button>
-
-                                            <button
-                                                type="button"
-                                                onClick={() =>
-                                                    updateAppointmentStatus(
-                                                        appointment.id,
-                                                        "CANCELLED"
-                                                    )
-                                                }
-                                            >
-                                                Cancel Appointment
-                                            </button>
-                                        </div>
-                                    )}
-                                </div>
-                            ))
+                                        {appointment.status === "CONFIRMED" && (
+                                            <div className="appt-actions">
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        updateAppointmentStatus(
+                                                            appointment.id,
+                                                            "COMPLETED"
+                                                        )
+                                                    }
+                                                >
+                                                    Mark Completed
+                                                </button>
+                                            </div>
+                                        )}
+                                    </article>
+                                ))}
+                            </div>
                         )}
                     </section>
 
-                    <section>
-                        <h2>Working Hours</h2>
+                    {/* Working Hours */}
+                    <section className="dash-section">
+                        <div className="section-head">
+                            <h2>Working Hours</h2>
+                        </div>
 
-                        {workingHours.map((day) => (
-                            <div
-                                key={day.day_of_week}
-                                style={{
-                                    border: "1px solid #ccc",
-                                    padding: "15px",
-                                    marginBottom: "10px"
-                                }}
-                            >
-                                <h3>
-                                    {
-                                        dayNames[
-                                        Number(
-                                            day.day_of_week
-                                        )
-                                        ]
-                                    }
-                                </h3>
+                        <div className="hours-list">
+                            {workingHours.map((day) => (
+                                <div key={day.day_of_week} className="hours-row">
+                                    <h3 className="hours-day">
+                                        {dayNames[Number(day.day_of_week)]}
+                                    </h3>
 
-                                <label>
-                                    <input
-                                        type="checkbox"
-                                        checked={
-                                            day.is_working
-                                        }
-                                        onChange={() =>
-                                            handleWorkingDayToggle(
-                                                day.day_of_week
-                                            )
-                                        }
-                                    />{" "}
-                                    Working day
-                                </label>
+                                    <label className="switch">
+                                        <input
+                                            type="checkbox"
+                                            checked={day.is_working}
+                                            onChange={() =>
+                                                handleWorkingDayToggle(day.day_of_week)
+                                            }
+                                        />
+                                        <span>Working day</span>
+                                    </label>
 
-                                {day.is_working && (
-                                    <div>
-                                        <br />
+                                    {day.is_working && (
+                                        <div className="hours-times">
+                                            <label>
+                                                <span>Start</span>
+                                                <input
+                                                    type="time"
+                                                    value={day.start_time.slice(0, 5)}
+                                                    onChange={(event) =>
+                                                        handleWorkingHoursChange(
+                                                            day.day_of_week,
+                                                            "start_time",
+                                                            event.target.value
+                                                        )
+                                                    }
+                                                />
+                                            </label>
 
-                                        <label>
-                                            Start time:{" "}
-                                            <input
-                                                type="time"
-                                                value={day.start_time.slice(
-                                                    0,
-                                                    5
-                                                )}
-                                                onChange={(
-                                                    event
-                                                ) =>
-                                                    handleWorkingHoursChange(
-                                                        day.day_of_week,
-                                                        "start_time",
-                                                        event
-                                                            .target
-                                                            .value
-                                                    )
-                                                }
-                                            />
-                                        </label>
+                                            <label>
+                                                <span>End</span>
+                                                <input
+                                                    type="time"
+                                                    value={day.end_time.slice(0, 5)}
+                                                    onChange={(event) =>
+                                                        handleWorkingHoursChange(
+                                                            day.day_of_week,
+                                                            "end_time",
+                                                            event.target.value
+                                                        )
+                                                    }
+                                                />
+                                            </label>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
 
-                                        {"  "}
-
-                                        <label>
-                                            End time:{" "}
-                                            <input
-                                                type="time"
-                                                value={day.end_time.slice(
-                                                    0,
-                                                    5
-                                                )}
-                                                onChange={(
-                                                    event
-                                                ) =>
-                                                    handleWorkingHoursChange(
-                                                        day.day_of_week,
-                                                        "end_time",
-                                                        event
-                                                            .target
-                                                            .value
-                                                    )
-                                                }
-                                            />
-                                        </label>
-                                    </div>
-                                )}
-                            </div>
-                        ))}
-
-                        <button
-                            type="button"
-                            onClick={
-                                handleSaveWorkingHours
-                            }
-                        >
-                            Save Working Hours
-                        </button>
+                        <div className="form-actions">
+                            <button type="button" onClick={handleSaveWorkingHours}>
+                                Save Working Hours
+                            </button>
+                        </div>
                     </section>
 
                     {/* Services */}
-                    <section>
-                        <h2>Services & Prices</h2>
-
-                        <h3>Add New Service</h3>
-
-                        <div>
-                            <label>
-                                Name:
-                                <input
-                                    type="text"
-                                    value={serviceName}
-                                    onChange={(event) =>
-                                        setServiceName(
-                                            event.target.value
-                                        )
-                                    }
-                                    placeholder="e.g. Haircut"
-                                />
-                            </label>
-
-                            <br />
-                            <br />
-
-                            <label>
-                                Description:
-                                <input
-                                    type="text"
-                                    value={
-                                        serviceDescription
-                                    }
-                                    onChange={(event) =>
-                                        setServiceDescription(
-                                            event.target.value
-                                        )
-                                    }
-                                    placeholder="Optional"
-                                />
-                            </label>
-
-                            <br />
-                            <br />
-
-                            <label>
-                                Price:
-                                <input
-                                    type="number"
-                                    min="0"
-                                    step="0.01"
-                                    value={servicePrice}
-                                    onChange={(event) =>
-                                        setServicePrice(
-                                            event.target.value
-                                        )
-                                    }
-                                    placeholder="12"
-                                />
-                            </label>
-
-                            <br />
-                            <br />
-
-                            <label>
-                                Duration:
-                                <input
-                                    type="number"
-                                    min="1"
-                                    value={
-                                        serviceDuration
-                                    }
-                                    onChange={(event) =>
-                                        setServiceDuration(
-                                            event.target.value
-                                        )
-                                    }
-                                    placeholder="25"
-                                />{" "}
-                                minutes
-                            </label>
-
-                            <br />
-                            <br />
-
-                            <button
-                                type="button"
-                                onClick={
-                                    handleAddService
-                                }
-                                disabled={
-                                    !serviceName ||
-                                    !servicePrice ||
-                                    !serviceDuration
-                                }
-                            >
-                                Add Service
-                            </button>
+                    <section className="dash-section">
+                        <div className="section-head">
+                            <h2>Services &amp; Prices</h2>
+                            <span className="count-badge">{services.length}</span>
                         </div>
 
-                        <h3>Current Services</h3>
+                        <div className="panel">
+                            <h3>Add New Service</h3>
+                            <div className="form-grid">
+                                <label>
+                                    <span>Name</span>
+                                    <input
+                                        type="text"
+                                        value={serviceName}
+                                        onChange={(e) => setServiceName(e.target.value)}
+                                        placeholder="e.g. Haircut"
+                                    />
+                                </label>
+
+                                <label>
+                                    <span>Description</span>
+                                    <input
+                                        type="text"
+                                        value={serviceDescription}
+                                        onChange={(e) =>
+                                            setServiceDescription(e.target.value)
+                                        }
+                                        placeholder="Optional"
+                                    />
+                                </label>
+
+                                <label>
+                                    <span>Price (€)</span>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        value={servicePrice}
+                                        onChange={(e) => setServicePrice(e.target.value)}
+                                        placeholder="12"
+                                    />
+                                </label>
+
+                                <label>
+                                    <span>Duration (min)</span>
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        value={serviceDuration}
+                                        onChange={(e) =>
+                                            setServiceDuration(e.target.value)
+                                        }
+                                        placeholder="25"
+                                    />
+                                </label>
+                            </div>
+
+                            <div className="form-actions">
+                                <button
+                                    type="button"
+                                    onClick={handleAddService}
+                                    disabled={
+                                        !serviceName || !servicePrice || !serviceDuration
+                                    }
+                                >
+                                    Add Service
+                                </button>
+                            </div>
+                        </div>
+
+                        <h3 className="subheading">Current Services</h3>
 
                         {services.length === 0 ? (
-                            <p>
-                                No services added yet.
-                            </p>
+                            <p className="hint">No services added yet.</p>
                         ) : (
-                            services.map((service) => (
-                                <div
-                                    key={service.id}
-                                    style={{
-                                        border:
-                                            "1px solid #ccc",
-                                        padding: "15px",
-                                        marginBottom:
-                                            "10px"
-                                    }}
-                                >
-                                    <h3>
-                                        {
-                                            service.name
-                                        }
-                                    </h3>
+                            <div className="card-grid">
+                                {services.map((service) => (
+                                    <article key={service.id} className="mini-card">
+                                        <header className="mini-head">
+                                            <h4>{service.name}</h4>
+                                            <span
+                                                className={`pill ${service.active ? "pill-success" : "pill-muted"
+                                                    }`}
+                                            >
+                                                {service.active ? "Active" : "Inactive"}
+                                            </span>
+                                        </header>
 
-                                    <p>
-                                        <strong>
-                                            Description:
-                                        </strong>{" "}
-                                        {service.description ||
-                                            "No description"}
-                                    </p>
+                                        <p className="muted">
+                                            {service.description || "No description"}
+                                        </p>
 
-                                    <p>
-                                        <strong>
-                                            Price:
-                                        </strong>{" "}
-                                        €{service.price}
-                                    </p>
+                                        <div className="mini-meta">
+                                            <span className="price">€{service.price}</span>
+                                            <span>{service.duration} min</span>
+                                        </div>
 
-                                    <p>
-                                        <strong>
-                                            Duration:
-                                        </strong>{" "}
-                                        {
-                                            service.duration
-                                        }{" "}
-                                        minutes
-                                    </p>
-
-                                    <p>
-                                        <strong>
-                                            Status:
-                                        </strong>{" "}
-                                        {service.active
-                                            ? "Active"
-                                            : "Inactive"}
-                                    </p>
-
-                                    <button
-                                        type="button"
-                                        onClick={() =>
-                                            handleEditService(
-                                                service
-                                            )
-                                        }
-                                    >
-                                        Edit
-                                    </button>
-
-                                    {" "}
-
-                                    <button
-                                        type="button"
-                                        onClick={() =>
-                                            handleToggleService(
-                                                service
-                                            )
-                                        }
-                                    >
-                                        {service.active
-                                            ? "Deactivate"
-                                            : "Activate"}
-                                    </button>
-                                </div>
-                            ))
+                                        <div className="mini-actions">
+                                            <button
+                                                type="button"
+                                                className="btn-ghost"
+                                                onClick={() => handleEditService(service)}
+                                            >
+                                                Edit
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className="btn-ghost"
+                                                onClick={() => handleToggleService(service)}
+                                            >
+                                                {service.active ? "Deactivate" : "Activate"}
+                                            </button>
+                                        </div>
+                                    </article>
+                                ))}
+                            </div>
                         )}
                     </section>
 
                     {/* Days Off */}
-                    <section>
-                        <h2>Days Off</h2>
-
-                        <div>
-                            <label>
-                                Start date:
-                                <input
-                                    type="date"
-                                    value={
-                                        dayOffStart
-                                    }
-                                    onChange={(event) =>
-                                        setDayOffStart(
-                                            event.target.value
-                                        )
-                                    }
-                                />
-                            </label>
-
-                            <br />
-                            <br />
-
-                            <label>
-                                End date:
-                                <input
-                                    type="date"
-                                    value={
-                                        dayOffEnd
-                                    }
-                                    min={
-                                        dayOffStart ||
-                                        undefined
-                                    }
-                                    onChange={(event) =>
-                                        setDayOffEnd(
-                                            event.target.value
-                                        )
-                                    }
-                                />
-                            </label>
-
-                            <br />
-                            <br />
-
-                            <label>
-                                Reason:
-                                <input
-                                    type="text"
-                                    value={
-                                        dayOffReason
-                                    }
-                                    onChange={(event) =>
-                                        setDayOffReason(
-                                            event.target.value
-                                        )
-                                    }
-                                    placeholder="Optional"
-                                />
-                            </label>
-
-                            <br />
-                            <br />
-
-                            <button
-                                type="button"
-                                onClick={
-                                    handleAddDayOff
-                                }
-                                disabled={
-                                    !dayOffStart ||
-                                    !dayOffEnd
-                                }
-                            >
-                                Add Days Off
-                            </button>
+                    <section className="dash-section">
+                        <div className="section-head">
+                            <h2>Days Off</h2>
                         </div>
 
-                        <h3>
-                            Scheduled Days Off
-                        </h3>
+                        <div className="panel">
+                            <div className="form-grid">
+                                <label>
+                                    <span>Start date</span>
+                                    <input
+                                        type="date"
+                                        value={dayOffStart}
+                                        onChange={(e) => setDayOffStart(e.target.value)}
+                                    />
+                                </label>
+
+                                <label>
+                                    <span>End date</span>
+                                    <input
+                                        type="date"
+                                        value={dayOffEnd}
+                                        min={dayOffStart || undefined}
+                                        onChange={(e) => setDayOffEnd(e.target.value)}
+                                    />
+                                </label>
+
+                                <label className="span-2">
+                                    <span>Reason</span>
+                                    <input
+                                        type="text"
+                                        value={dayOffReason}
+                                        onChange={(e) => setDayOffReason(e.target.value)}
+                                        placeholder="Optional"
+                                    />
+                                </label>
+                            </div>
+
+                            <div className="form-actions">
+                                <button
+                                    type="button"
+                                    onClick={handleAddDayOff}
+                                    disabled={!dayOffStart || !dayOffEnd}
+                                >
+                                    Add Days Off
+                                </button>
+                            </div>
+                        </div>
+
+                        <h3 className="subheading">Scheduled Days Off</h3>
 
                         {daysOff.length === 0 ? (
-                            <p>
-                                No days off scheduled.
-                            </p>
+                            <p className="hint">No days off scheduled.</p>
                         ) : (
-                            groupedDaysOff.map(
-                                (group) => (
-                                    <div
-                                        key={group.ids.join(
-                                            "-"
-                                        )}
-                                        style={{
-                                            border:
-                                                "1px solid #ccc",
-                                            padding:
-                                                "10px",
-                                            marginBottom:
-                                                "10px"
-                                        }}
+                            <div className="card-grid">
+                                {groupedDaysOff.map((group) => (
+                                    <article
+                                        key={group.ids.join("-")}
+                                        className="mini-card"
                                     >
-                                        <p>
-                                            <strong>
-                                                {group.startDate ===
-                                                    group.endDate
-                                                    ? group.startDate
-                                                    : `${group.startDate} – ${group.endDate}`}
-                                            </strong>
+                                        <h4>
+                                            {group.startDate === group.endDate
+                                                ? group.startDate
+                                                : `${group.startDate} – ${group.endDate}`}
+                                        </h4>
+
+                                        <p className="muted">
+                                            {group.reason || "No reason provided"}
                                         </p>
 
-                                        <p>
-                                            <strong>
-                                                Reason:
-                                            </strong>{" "}
-                                            {group.reason ||
-                                                "No reason provided"}
-                                        </p>
-
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                handleRemoveDayOff(
-                                                    group.ids
-                                                )
-                                            }
-                                        >
-                                            Remove
-                                        </button>
-                                    </div>
-                                )
-                            )
+                                        <div className="mini-actions">
+                                            <button
+                                                type="button"
+                                                className="btn-ghost danger"
+                                                onClick={() => handleRemoveDayOff(group.ids)}
+                                            >
+                                                Remove
+                                            </button>
+                                        </div>
+                                    </article>
+                                ))}
+                            </div>
                         )}
                     </section>
 
                     {/* Breaks */}
-                    <section>
-                        <h2>Breaks</h2>
-
-                        <div>
-                            <label>
-                                Day:
-                                <select
-                                    value={breakDay}
-                                    onChange={(event) =>
-                                        setBreakDay(
-                                            event.target.value
-                                        )
-                                    }
-                                >
-                                    <option value="">
-                                        Select a day
-                                    </option>
-
-                                    {dayNames.map(
-                                        (
-                                            day,
-                                            index
-                                        ) => (
-                                            <option
-                                                key={
-                                                    index
-                                                }
-                                                value={
-                                                    index
-                                                }
-                                            >
-                                                {day}
-                                            </option>
-                                        )
-                                    )}
-                                </select>
-                            </label>
-
-                            <br />
-                            <br />
-
-                            <label>
-                                Start time:
-                                <input
-                                    type="time"
-                                    value={
-                                        breakStart
-                                    }
-                                    onChange={(event) =>
-                                        setBreakStart(
-                                            event.target.value
-                                        )
-                                    }
-                                />
-                            </label>
-
-                            <br />
-                            <br />
-
-                            <label>
-                                End time:
-                                <input
-                                    type="time"
-                                    value={
-                                        breakEnd
-                                    }
-                                    onChange={(event) =>
-                                        setBreakEnd(
-                                            event.target.value
-                                        )
-                                    }
-                                />
-                            </label>
-
-                            <br />
-                            <br />
-
-                            <label>
-                                Name:
-                                <input
-                                    type="text"
-                                    value={
-                                        breakName
-                                    }
-                                    onChange={(event) =>
-                                        setBreakName(
-                                            event.target.value
-                                        )
-                                    }
-                                    placeholder="e.g. Lunch"
-                                />
-                            </label>
-
-                            <br />
-                            <br />
-
-                            <button
-                                type="button"
-                                onClick={
-                                    handleAddBreak
-                                }
-                                disabled={
-                                    breakDay === "" ||
-                                    !breakStart ||
-                                    !breakEnd
-                                }
-                            >
-                                Add Break
-                            </button>
+                    <section className="dash-section">
+                        <div className="section-head">
+                            <h2>Breaks</h2>
                         </div>
 
-                        <h3>
-                            Scheduled Breaks
-                        </h3>
+                        <div className="panel">
+                            <div className="form-grid">
+                                <label>
+                                    <span>Day</span>
+                                    <select
+                                        value={breakDay}
+                                        onChange={(e) => setBreakDay(e.target.value)}
+                                    >
+                                        <option value="">Select a day</option>
+                                        {dayNames.map((day, index) => (
+                                            <option key={index} value={index}>
+                                                {day}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </label>
+
+                                <label>
+                                    <span>Start time</span>
+                                    <input
+                                        type="time"
+                                        value={breakStart}
+                                        onChange={(e) => setBreakStart(e.target.value)}
+                                    />
+                                </label>
+
+                                <label>
+                                    <span>End time</span>
+                                    <input
+                                        type="time"
+                                        value={breakEnd}
+                                        onChange={(e) => setBreakEnd(e.target.value)}
+                                    />
+                                </label>
+
+                                <label>
+                                    <span>Name</span>
+                                    <input
+                                        type="text"
+                                        value={breakName}
+                                        onChange={(e) => setBreakName(e.target.value)}
+                                        placeholder="e.g. Lunch"
+                                    />
+                                </label>
+                            </div>
+
+                            <div className="form-actions">
+                                <button
+                                    type="button"
+                                    onClick={handleAddBreak}
+                                    disabled={
+                                        breakDay === "" || !breakStart || !breakEnd
+                                    }
+                                >
+                                    Add Break
+                                </button>
+                            </div>
+                        </div>
+
+                        <h3 className="subheading">Scheduled Breaks</h3>
 
                         {breaks.length === 0 ? (
-                            <p>
-                                No breaks scheduled.
-                            </p>
+                            <p className="hint">No breaks scheduled.</p>
                         ) : (
-                            breaks.map(
-                                (breakItem) => (
-                                    <div
-                                        key={
-                                            breakItem.id
-                                        }
-                                        style={{
-                                            border:
-                                                "1px solid #ccc",
-                                            padding:
-                                                "10px",
-                                            marginBottom:
-                                                "10px"
-                                        }}
-                                    >
-                                        <p>
-                                            <strong>
-                                                {
-                                                    dayNames[
-                                                    Number(
-                                                        breakItem.day_of_week
-                                                    )
-                                                    ]
-                                                }
-                                            </strong>
+                            <div className="card-grid">
+                                {breaks.map((breakItem) => (
+                                    <article key={breakItem.id} className="mini-card">
+                                        <h4>
+                                            {dayNames[Number(breakItem.day_of_week)]}
+                                        </h4>
+
+                                        <p className="time-range">
+                                            {breakItem.start_time.slice(0, 5)} –{" "}
+                                            {breakItem.end_time.slice(0, 5)}
                                         </p>
 
-                                        <p>
-                                            {breakItem.start_time.slice(
-                                                0,
-                                                5
-                                            )}
-                                            {" – "}
-                                            {breakItem.end_time.slice(
-                                                0,
-                                                5
-                                            )}
+                                        <p className="muted">
+                                            {breakItem.name || "No name provided"}
                                         </p>
 
-                                        <p>
-                                            <strong>
-                                                Name:
-                                            </strong>{" "}
-                                            {breakItem.name ||
-                                                "No name provided"}
-                                        </p>
-
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                handleRemoveBreak(
-                                                    breakItem.id
-                                                )
-                                            }
-                                        >
-                                            Remove
-                                        </button>
-                                    </div>
-                                )
-                            )
+                                        <div className="mini-actions">
+                                            <button
+                                                type="button"
+                                                className="btn-ghost danger"
+                                                onClick={() => handleRemoveBreak(breakItem.id)}
+                                            >
+                                                Remove
+                                            </button>
+                                        </div>
+                                    </article>
+                                ))}
+                            </div>
                         )}
                     </section>
                 </>
             )}
 
-            {/* Client dashboard */}
+            {/* ============ CLIENT DASHBOARD ============ */}
             {workingHours.length === 0 && (
-                <section>
-                    <h2>My Appointments</h2>
+                <section className="dash-section">
+                    <div className="section-head">
+                        <h2>My Appointments</h2>
+                        <span className="count-badge">{appointments.length}</span>
+                    </div>
 
                     {appointments.length === 0 ? (
-                        <p>
-                            You don't have any appointments.
-                        </p>
+                        <p className="hint">You don't have any appointments.</p>
                     ) : (
-                        appointments.map(
-                            (appointment) => (
-                                <div
-                                    key={
-                                        appointment.id
-                                    }
-                                    style={{
-                                        border:
-                                            "1px solid #ccc",
-                                        padding: "15px",
-                                        marginBottom:
-                                            "15px"
-                                    }}
-                                >
-                                    <h3>
-                                        {
-                                            appointment.service_name
-                                        }
-                                    </h3>
+                        <div className="appt-grid">
+                            {appointments.map((appointment) => (
+                                <article key={appointment.id} className="appt-card">
+                                    <header className="appt-head">
+                                        <h3>{appointment.service_name}</h3>
+                                        <StatusBadge status={appointment.status} />
+                                    </header>
 
-                                    <p>
-                                        <strong>
-                                            Barber:
-                                        </strong>{" "}
-                                        {
-                                            appointment.barber_name
-                                        }
-                                    </p>
-
-                                    <p>
-                                        <strong>
-                                            Shop:
-                                        </strong>{" "}
-                                        {
-                                            appointment.shop_name
-                                        }
-                                    </p>
-
-                                    <p>
-                                        <strong>
-                                            Date:
-                                        </strong>{" "}
-                                        {
-                                            appointment.appointment_date
-                                        }
-                                    </p>
-
-                                    <p>
-                                        <strong>
-                                            Time:
-                                        </strong>{" "}
-                                        {
-                                            appointment.start_time
-                                        }{" "}
-                                        -{" "}
-                                        {
-                                            appointment.end_time
-                                        }
-                                    </p>
-
-                                    <p>
-                                        <strong>
-                                            Price:
-                                        </strong>{" "}
-                                        €{appointment.price}
-                                    </p>
-
-                                    <p>
-                                        <strong>
-                                            Status:
-                                        </strong>{" "}
-                                        {appointment.status}
-                                    </p>
+                                    <dl className="appt-meta">
+                                        <div>
+                                            <dt>Barber</dt>
+                                            <dd>{appointment.barber_name}</dd>
+                                        </div>
+                                        <div>
+                                            <dt>Shop</dt>
+                                            <dd>{appointment.shop_name}</dd>
+                                        </div>
+                                        <div>
+                                            <dt>Date</dt>
+                                            <dd>{appointment.appointment_date}</dd>
+                                        </div>
+                                        <div>
+                                            <dt>Time</dt>
+                                            <dd>
+                                                {appointment.start_time} - {appointment.end_time}
+                                            </dd>
+                                        </div>
+                                        <div>
+                                            <dt>Price</dt>
+                                            <dd className="price">€{appointment.price}</dd>
+                                        </div>
+                                    </dl>
 
                                     {appointment.status === "CONFIRMED" && (
-                                        <div>
+                                        <div className="appt-actions">
                                             <button
                                                 type="button"
-                                                onClick={() =>
-                                                    updateAppointmentStatus(
-                                                        appointment.id,
-                                                        "COMPLETED"
-                                                    )
-                                                }
-                                            >
-                                                Mark Completed
-                                            </button>
-
-                                            <button
-                                                type="button"
-                                                onClick={() =>
-                                                    updateAppointmentStatus(
-                                                        appointment.id,
-                                                        "CANCELLED"
-                                                    )
-                                                }
+                                                className="btn-ghost danger"
+                                                onClick={() => cancelAppointment(appointment.id)}
                                             >
                                                 Cancel Appointment
                                             </button>
                                         </div>
                                     )}
-                                </div>
-                            )
-                        )
+                                </article>
+                            ))}
+                        </div>
                     )}
                 </section>
             )}

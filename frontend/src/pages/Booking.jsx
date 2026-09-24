@@ -264,180 +264,190 @@ function Booking() {
         return daysOff.some((dayOff) => dayOff.date === formattedDate);
     };
 
-    return (
-        <main>
-            <h1>Book an Appointment</h1>
+   return (
+  <main className="page booking">
+    <header className="page-hero">
+      <p className="eyebrow">Reserve your chair</p>
+      <h1>Book an Appointment</h1>
+      <p className="lede">
+        Select a barber, service, date and available time.
+      </p>
+    </header>
 
-            <p>
-                Select a barber, service, date and available time.
-            </p>
+    {/* Progress indicator */}
+    <ol className="booking-progress" aria-label="Booking progress">
+      <li className={selectedBarber ? "done" : "active"}>Barber</li>
+      <li
+        className={
+          selectedService ? "done" : selectedBarber ? "active" : ""
+        }
+      >
+        Service
+      </li>
+      <li
+        className={
+          selectedDate ? "done" : selectedService ? "active" : ""
+        }
+      >
+        Date
+      </li>
+      <li
+        className={
+          selectedSlot ? "done" : selectedDate ? "active" : ""
+        }
+      >
+        Time
+      </li>
+    </ol>
 
-            {/* Barber selection */}
-            <section>
-                <h2>Select a Barber</h2>
+    {message && <p className="alert">{message}</p>}
 
-                {message && <p>{message}</p>}
+    {/* Barber selection */}
+    <section className="booking-step" aria-labelledby="step-barber">
+      <h2 id="step-barber">1. Select a Barber</h2>
 
-                {barbers.map((barber) => (
-                    <div
-                        key={barber.id}
-                        onClick={() => {
-                            setSelectedBarber(barber);
-                            setSelectedService(null);
-                            setSelectedDate("");
-                            setSelectedSlot(null);
-                            setAvailableSlots([]);
-                        }}
-                        style={{
-                            border:
-                                selectedBarber?.id === barber.id
-                                    ? "2px solid black"
-                                    : "1px solid #ccc",
-                            padding: "15px",
-                            marginBottom: "10px",
-                            cursor: "pointer"
-                        }}
-                    >
-                        <h3>{barber.shop_name}</h3>
-                        <p>{barber.description}</p>
-                    </div>
-                ))}
-            </section>
+      <div className="option-grid">
+        {barbers.map((barber) => {
+          const isActive = selectedBarber?.id === barber.id;
+          return (
+            <button
+              key={barber.id}
+              type="button"
+              className={`option-card ${isActive ? "is-active" : ""}`}
+              aria-pressed={isActive}
+              onClick={() => {
+                setSelectedBarber(barber);
+                setSelectedService(null);
+                setSelectedDate("");
+                setSelectedSlot(null);
+                setAvailableSlots([]);
+              }}
+            >
+              <h3>{barber.shop_name}</h3>
+              <p>{barber.description}</p>
+            </button>
+          );
+        })}
+      </div>
+    </section>
 
-            {/* Service selection */}
-            <section>
-                <h2>Select a Service</h2>
+    {/* Service selection */}
+    <section className="booking-step" aria-labelledby="step-service">
+      <h2 id="step-service">2. Select a Service</h2>
 
-                {!selectedBarber ? (
-                    <p>Select a barber first.</p>
-                ) : services.length === 0 ? (
-                    <p>No services available for this barber.</p>
-                ) : (
-                    services.map((service) => (
-                        <div
-                            key={service.id}
-                            onClick={() => {
-                                setSelectedService(service);
-                                setAvailableSlots([]);
-                                setSelectedSlot(null);
-                            }}
-                            style={{
-                                border:
-                                    selectedService?.id === service.id
-                                        ? "2px solid black"
-                                        : "1px solid #ccc",
-                                padding: "15px",
-                                marginBottom: "10px",
-                                cursor: "pointer"
-                            }}
-                        >
-                            <h3>{service.name}</h3>
+      {!selectedBarber ? (
+        <p className="hint">Select a barber first.</p>
+      ) : services.length === 0 ? (
+        <p className="hint">No services available for this barber.</p>
+      ) : (
+        <div className="option-grid">
+          {services.map((service) => {
+            const isActive = selectedService?.id === service.id;
+            return (
+              <button
+                key={service.id}
+                type="button"
+                className={`option-card ${isActive ? "is-active" : ""}`}
+                aria-pressed={isActive}
+                onClick={() => {
+                  setSelectedService(service);
+                  setAvailableSlots([]);
+                  setSelectedSlot(null);
+                }}
+              >
+                <h3>{service.name}</h3>
+                <p>{service.description}</p>
+                <div className="option-meta">
+                  <span className="price">€{service.price}</span>
+                  <span className="duration">
+                    {service.duration} min
+                  </span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </section>
 
-                            <p>{service.description}</p>
+    {/* Date selection */}
+    <section className="booking-step" aria-labelledby="step-date">
+      <h2 id="step-date">3. Select a Date</h2>
 
-                            <p>
-                                Price: €{service.price}
-                            </p>
+      <div className="calendar-wrap">
+        <Calendar
+          value={
+            selectedDate
+              ? new Date(`${selectedDate}T00:00:00`)
+              : null
+          }
+          minDate={new Date()}
+          tileDisabled={({ date, view }) => {
+            if (view !== "month") return false;
+            return !isWorkingDay(date) || isDayOff(date);
+          }}
+          onChange={(date) => {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, "0");
+            const day = String(date.getDate()).padStart(2, "0");
 
-                            <p>
-                                Duration: {service.duration} minutes
-                            </p>
-                        </div>
-                    ))
-                )}
-            </section>
+            setSelectedDate(`${year}-${month}-${day}`);
+            setAvailableSlots([]);
+            setSelectedSlot(null);
+          }}
+        />
+      </div>
+    </section>
 
-            {/* Date selection */}
-            <section>
-                <h2>Select a Date</h2>
+    {/* Available times */}
+    <section className="booking-step" aria-labelledby="step-time">
+      <h2 id="step-time">4. Available Times</h2>
 
-                <Calendar
-                    value={
-                        selectedDate
-                            ? new Date(`${selectedDate}T00:00:00`)
-                            : null
-                    }
-                    minDate={new Date()}
-                    tileDisabled={({ date, view }) => {
-                        if (view !== "month") {
-                            return false;
-                        }
+      {!selectedDate || !selectedService || !selectedBarber ? (
+        <p className="hint">
+          Select a barber, service and date to see available times.
+        </p>
+      ) : availableSlots.length === 0 ? (
+        <p className="hint">No available times for this date.</p>
+      ) : (
+        <div className="slot-grid">
+          {availableSlots.map((slot) => {
+            const isActive =
+              selectedSlot?.start_time === slot.start_time;
+            return (
+              <button
+                key={slot.start_time}
+                type="button"
+                className={`slot ${isActive ? "is-active" : ""}`}
+                aria-pressed={isActive}
+                onClick={() => setSelectedSlot(slot)}
+              >
+                {slot.start_time}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </section>
 
-                        return !isWorkingDay(date) || isDayOff(date);
-                    }}
-                    onChange={(date) => {
-                        const year = date.getFullYear();
-                        const month = String(
-                            date.getMonth() + 1
-                        ).padStart(2, "0");
-                        const day = String(
-                            date.getDate()
-                        ).padStart(2, "0");
-
-                        const formattedDate =
-                            `${year}-${month}-${day}`;
-
-                        setSelectedDate(formattedDate);
-                        setAvailableSlots([]);
-                        setSelectedSlot(null);
-                    }}
-                />
-            </section>
-
-            {/* Available times */}
-            <section>
-                <h2>Available Times</h2>
-
-                {!selectedDate ||
-                    !selectedService ||
-                    !selectedBarber ? (
-                    <p>
-                        Select a barber, service and date to see
-                        available times.
-                    </p>
-                ) : availableSlots.length === 0 ? (
-                    <p>
-                        No available times for this date.
-                    </p>
-                ) : (
-                    availableSlots.map((slot) => (
-                        <button
-                            key={slot.start_time}
-                            type="button"
-                            onClick={() => setSelectedSlot(slot)}
-                            style={{
-                                margin: "5px",
-                                padding: "10px 15px",
-                                border:
-                                    selectedSlot?.start_time ===
-                                        slot.start_time
-                                        ? "2px solid black"
-                                        : "1px solid #ccc"
-                            }}
-                        >
-                            {slot.start_time}
-                        </button>
-                    ))
-                )}
-            </section>
-
-            {/* Booking button */}
-            <section>
-                <button
-                    type="button"
-                    disabled={
-                        !selectedBarber ||
-                        !selectedService ||
-                        !selectedDate ||
-                        !selectedSlot
-                    }
-                    onClick={handleBooking}
-                >
-                    Book Appointment
-                </button>
-            </section>
-        </main>
-    );
+    {/* Booking button */}
+    <section className="booking-submit">
+      <button
+        type="button"
+        className="btn btn-lg"
+        disabled={
+          !selectedBarber ||
+          !selectedService ||
+          !selectedDate ||
+          !selectedSlot
+        }
+        onClick={handleBooking}
+      >
+        Book Appointment
+      </button>
+    </section>
+  </main>
+);
 }
 
 export default Booking;
