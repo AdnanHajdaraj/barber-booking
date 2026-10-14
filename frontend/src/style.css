@@ -31,7 +31,7 @@
 
   --social-bg: rgba(250, 247, 242, 0.6);
 
-  /* Shadows — soft, layered */
+  /* Shadows */
   --shadow-sm: 0 1px 2px rgba(26, 26, 26, 0.05);
   --shadow:
     0 1px 2px rgba(26, 26, 26, 0.04),
@@ -74,7 +74,6 @@ h1 {
   padding-bottom: 0.5rem;
 }
 
-/* Signature barber-pole underline */
 h1::after {
   content: '';
   display: block;
@@ -174,7 +173,6 @@ button:active, .btn:active {
   transform: translateY(0);
 }
 
-/* Secondary / outline variant */
 button.secondary, .btn.secondary {
   background: transparent;
   color: var(--secondary);
@@ -215,7 +213,7 @@ button.secondary:hover, .btn.secondary:hover {
   border-radius: 4px;
 }
 
-/* ===== Dark mode — deep navy barbershop at night ===== */
+/* ===== Dark mode ===== */
 @media (prefers-color-scheme: dark) {
   :root {
     --text: #c9c4bd;
@@ -259,6 +257,7 @@ button.secondary:hover, .btn.secondary:hover {
     background-size: 200% 100%;
   }
 }
+
 /* ===== Page wrapper ===== */
 .page {
   max-width: 1080px;
@@ -365,7 +364,8 @@ button.secondary:hover, .btn.secondary:hover {
   margin-top: 1rem;
   background: linear-gradient(135deg, var(--barber-red-soft), var(--barber-red));
 }
-/* ===== Booking page layout ===== */
+
+/* ===== Booking page ===== */
 .booking .booking-step {
   margin: 2.5rem 0;
   padding-bottom: 1.5rem;
@@ -382,7 +382,6 @@ button.secondary:hover, .btn.secondary:hover {
   color: var(--barber-blue);
 }
 
-/* ===== Progress bar ===== */
 .booking-progress {
   list-style: none;
   display: flex;
@@ -424,7 +423,7 @@ button.secondary:hover, .btn.secondary:hover {
   border-color: var(--accent);
 }
 
-/* ===== Option cards (barbers / services) ===== */
+/* ===== Option cards ===== */
 .option-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -441,11 +440,7 @@ button.secondary:hover, .btn.secondary:hover {
   padding: 1.1rem 1.25rem;
   cursor: pointer;
   box-shadow: var(--shadow-sm);
-  transition:
-    border-color 0.2s ease,
-    transform 0.2s ease,
-    box-shadow 0.2s ease,
-    background 0.2s ease;
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
 .option-card:hover {
@@ -476,7 +471,6 @@ button.secondary:hover, .btn.secondary:hover {
     0 8px 20px -8px rgba(200, 16, 46, 0.35);
 }
 
-/* Meta row inside service cards */
 .option-meta {
   display: flex;
   justify-content: space-between;
@@ -530,7 +524,7 @@ button.secondary:hover, .btn.secondary:hover {
   box-shadow: 0 6px 14px -6px rgba(200, 16, 46, 0.6);
 }
 
-/* ===== Calendar wrapper ===== */
+/* ===== Calendar ===== */
 .calendar-wrap {
   display: inline-block;
   padding: 1rem;
@@ -540,7 +534,6 @@ button.secondary:hover, .btn.secondary:hover {
   box-shadow: var(--shadow-sm);
 }
 
-/* Force inherit so react-calendar doesn't use its own palette */
 .calendar-wrap .react-calendar {
   border: none;
   background: transparent;
@@ -551,7 +544,6 @@ button.secondary:hover, .btn.secondary:hover {
   line-height: 1.4;
 }
 
-/* ===== Navigation (month + arrows) ===== */
 .calendar-wrap .react-calendar__navigation {
   margin-bottom: 0.75rem;
 }
@@ -577,7 +569,6 @@ button.secondary:hover, .btn.secondary:hover {
   opacity: 0.35;
 }
 
-/* ===== Weekday labels (Mon, Tue, …) ===== */
 .calendar-wrap .react-calendar__month-view__weekdays {
   text-transform: uppercase;
   font-size: 0.72rem;
@@ -596,7 +587,6 @@ button.secondary:hover, .btn.secondary:hover {
   cursor: default;
 }
 
-/* ===== Day tiles ===== */
 .calendar-wrap .react-calendar__tile {
   background: transparent;
   color: var(--text-h);
@@ -606,25 +596,21 @@ button.secondary:hover, .btn.secondary:hover {
   transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
 }
 
-/* Days from the previous/next month — dim them */
 .calendar-wrap .react-calendar__month-view__days__day--neighboringMonth {
   color: var(--text);
   opacity: 0.4;
 }
 
-/* Weekend days — accent with the barber red */
 .calendar-wrap .react-calendar__month-view__days__day--weekend {
   color: var(--accent);
 }
 
-/* Hover state for enabled days */
 .calendar-wrap .react-calendar__tile:enabled:hover,
 .calendar-wrap .react-calendar__tile:enabled:focus {
   background: var(--accent-bg);
   color: var(--accent-hover);
 }
 
-/* Today (not yet selected) */
 .calendar-wrap .react-calendar__tile--now {
   background: var(--secondary-bg);
   color: var(--secondary);
@@ -637,7 +623,6 @@ button.secondary:hover, .btn.secondary:hover {
   color: var(--secondary);
 }
 
-/* Selected day — barber red, white text, strong contrast */
 .calendar-wrap .react-calendar__tile--active,
 .calendar-wrap .react-calendar__tile--active:enabled:hover,
 .calendar-wrap .react-calendar__tile--active:enabled:focus {
@@ -647,7 +632,6 @@ button.secondary:hover, .btn.secondary:hover {
   box-shadow: 0 6px 14px -6px rgba(200, 16, 46, 0.55);
 }
 
-/* Disabled days (non-working / days off) — clearly muted */
 .calendar-wrap .react-calendar__tile:disabled,
 .calendar-wrap .react-calendar__tile--disabled {
   background: transparent;
@@ -658,22 +642,17 @@ button.secondary:hover, .btn.secondary:hover {
   text-decoration-thickness: 1px;
 }
 
-/* If the selected day happens to be disabled, keep it readable */
 .calendar-wrap .react-calendar__tile--active:disabled {
   opacity: 0.7;
 }
 
-/* ===== Dark mode tweaks ===== */
 @media (prefers-color-scheme: dark) {
   .calendar-wrap .react-calendar__month-view__weekdays {
     color: var(--secondary);
   }
-
-  /* Neighboring days in dark mode need a hair more visibility */
   .calendar-wrap .react-calendar__month-view__days__day--neighboringMonth {
     opacity: 0.3;
   }
-
   .calendar-wrap .react-calendar__tile--now {
     color: var(--secondary);
   }
@@ -698,6 +677,35 @@ button.secondary:hover, .btn.secondary:hover {
   margin: 1rem 0;
 }
 
+.alert-error {
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-border);
+  border-left: 4px solid var(--accent);
+  color: var(--accent-hover);
+}
+
+.alert-info {
+  background: var(--secondary-bg);
+  border: 1px solid var(--secondary-border);
+  border-left: 4px solid var(--secondary);
+  color: var(--secondary);
+}
+
+.alert-success {
+  background: rgba(34, 139, 74, 0.12);
+  border: 1px solid rgba(34, 139, 74, 0.35);
+  border-left: 4px solid #22a05a;
+  color: #1d7a44;
+}
+
+@media (prefers-color-scheme: dark) {
+  .alert-success {
+    color: #7ddc9a;
+    background: rgba(34, 139, 74, 0.15);
+    border-color: rgba(125, 220, 154, 0.4);
+  }
+}
+
 /* ===== Submit button ===== */
 .booking-submit {
   text-align: center;
@@ -710,6 +718,12 @@ button.secondary:hover, .btn.secondary:hover {
   border-radius: 12px;
 }
 
+.btn-sm {
+  padding: 0.5rem 1rem;
+  font-size: 0.88rem;
+  border-radius: 8px;
+}
+
 .btn:disabled,
 button:disabled {
   opacity: 0.45;
@@ -718,6 +732,8 @@ button:disabled {
   box-shadow: none;
   filter: grayscale(0.3);
 }
+
+/* ===== Contact ===== */
 .contact-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -761,6 +777,7 @@ button:disabled {
   opacity: 0.85;
   margin: 0 0 1.25rem;
 }
+
 /* ===== Dashboard shell ===== */
 .dashboard .dash-section {
   margin: 3rem 0;
@@ -769,6 +786,7 @@ button:disabled {
 .section-head {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 0.75rem;
   margin-bottom: 1rem;
   padding-bottom: 0.75rem;
@@ -779,6 +797,12 @@ button:disabled {
   margin: 0;
   font-size: 1.35rem;
   color: var(--barber-blue);
+}
+
+.head-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .count-badge {
@@ -805,7 +829,6 @@ button:disabled {
   font-weight: 700;
 }
 
-/* ===== Panels (form containers) ===== */
 .panel {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -867,7 +890,7 @@ button:disabled {
   flex-wrap: wrap;
 }
 
-/* ===== Working hours rows ===== */
+/* ===== Working hours ===== */
 .hours-list {
   display: flex;
   flex-direction: column;
@@ -914,6 +937,7 @@ button:disabled {
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .hours-times label {
@@ -934,7 +958,7 @@ button:disabled {
   color: var(--text-h);
 }
 
-/* ===== Card grid (services, days off, breaks) ===== */
+/* ===== Card grids ===== */
 .card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -1007,7 +1031,7 @@ button:disabled {
   flex-wrap: wrap;
 }
 
-/* ===== Small ghost buttons for card actions ===== */
+/* ===== Ghost buttons ===== */
 .btn-ghost {
   font: inherit;
   font-size: 0.85rem;
@@ -1038,7 +1062,13 @@ button:disabled {
   border-color: var(--accent);
 }
 
-/* ===== Pills / status badges ===== */
+.btn-ghost.small {
+  font-size: 0.78rem;
+  padding: 0.3rem 0.6rem;
+  white-space: nowrap;
+}
+
+/* ===== Pills ===== */
 .pill {
   display: inline-block;
   padding: 0.2rem 0.65rem;
@@ -1051,21 +1081,21 @@ button:disabled {
 }
 
 .pill-info {
-  background: var(--secondary-bg);
-  color: var(--secondary);
-  border: 1px solid var(--secondary-border);
+  background: #e1f1353f;
+  color: #dff426;
+  border: 1px solid #c9e21a;
 }
 
 .pill-success {
-  background: rgba(34, 139, 74, 0.12);
-  color: #1d7a44;
-  border: 1px solid rgba(34, 139, 74, 0.35);
+  background: rgba(55, 209, 114, 0.12);
+  color: #2afb1b;
+  border: 1px solid rgba(36, 241, 115, 0.753);
 }
 
 .pill-danger {
-  background: var(--accent-bg);
-  color: var(--accent-hover);
-  border: 1px solid var(--accent-border);
+  background: #7b131e52;
+  color: #ff0019ee;
+  border: 1px solid #fc0c24;
 }
 
 .pill-warn {
@@ -1160,6 +1190,152 @@ button:disabled {
   gap: 0.6rem;
   flex-wrap: wrap;
 }
+
+/* ===== Tabs ===== */
+.tabs {
+  display: flex;
+  gap: 0.25rem;
+  border-bottom: 1px solid var(--border);
+  margin: 1.5rem 0 1rem;
+}
+
+.tab {
+  background: transparent;
+  border: 0;
+  padding: 0.6rem 1rem;
+  cursor: pointer;
+  color: var(--text);
+  border-bottom: 2px solid transparent;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border-radius: 0;
+  box-shadow: none;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.tab:hover {
+  color: var(--text-h);
+  background: transparent;
+  transform: none;
+  box-shadow: none;
+}
+
+.tab-active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* ===== Modal ===== */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  display: grid;
+  place-items: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  width: min(480px, 100%);
+  max-height: 85vh;
+  overflow: auto;
+  padding: 1.5rem;
+  box-shadow: var(--shadow-lg);
+}
+
+.modal-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-head h3 {
+  margin: 0;
+  font-size: 1.15rem;
+  color: var(--text-h);
+  font-family: var(--sans);
+  font-weight: 700;
+}
+
+.modal-close {
+  background: transparent;
+  border: 0;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--text);
+  padding: 0 0.25rem;
+  border-radius: 6px;
+  box-shadow: none;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.modal-close:hover {
+  color: var(--accent);
+  background: var(--accent-bg);
+  transform: none;
+  box-shadow: none;
+}
+
+.modal-body {
+  color: var(--text);
+}
+
+.modal-body .form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+  flex-wrap: wrap;
+}
+
+/* ===== Break presets ===== */
+.preset-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.preset-label {
+  color: var(--text);
+  opacity: 0.75;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.preset-chip {
+  background: var(--code-bg);
+  color: var(--text-h);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: none;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.preset-chip:hover {
+  background: var(--accent-bg);
+  border-color: var(--accent-border);
+  color: var(--accent);
+  transform: none;
+  box-shadow: none;
+}
+
 /* ===== Home hero ===== */
 .hero {
   display: grid;
@@ -1190,7 +1366,6 @@ button:disabled {
   margin-top: 1.75rem;
 }
 
-/* ===== Decorative barber pole ===== */
 .hero-pole {
   position: relative;
   width: 72px;
@@ -1229,7 +1404,6 @@ button:disabled {
   to   { background-position: 0 200%; }
 }
 
-/* Hide the pole on small screens */
 @media (max-width: 720px) {
   .hero {
     grid-template-columns: 1fr;
@@ -1268,8 +1442,7 @@ button:disabled {
   border-radius: 14px;
   padding: 1.5rem 1.4rem;
   box-shadow: var(--shadow-sm);
-  transition: transform 0.2s ease, box-shadow 0.2s ease,
-    border-color 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .feature-card:hover {
@@ -1304,7 +1477,8 @@ button:disabled {
   color: var(--text);
   opacity: 0.85;
 }
-/* ===== Auth layout ===== */
+
+/* ===== Auth ===== */
 .auth-page {
   min-height: calc(100vh - 6rem);
   display: grid;
@@ -1324,7 +1498,6 @@ button:disabled {
   overflow: hidden;
 }
 
-/* Barber-pole accent strip at the top of the card */
 .auth-card::before {
   content: "";
   position: absolute;
@@ -1352,7 +1525,6 @@ button:disabled {
   .auth-card::before { animation: none; }
 }
 
-/* ===== Head ===== */
 .auth-head {
   text-align: center;
   margin-bottom: 1.75rem;
@@ -1370,7 +1542,6 @@ button:disabled {
   opacity: 0.85;
 }
 
-/* ===== Form ===== */
 .auth-form {
   display: flex;
   flex-direction: column;
@@ -1395,8 +1566,7 @@ button:disabled {
   border: 1.5px solid var(--border);
   background: var(--bg);
   color: var(--text-h);
-  transition: border-color 0.15s ease, box-shadow 0.15s ease,
-    background 0.15s ease;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
 }
 
 .field input::placeholder {
@@ -1415,29 +1585,11 @@ button:disabled {
   background: var(--surface);
 }
 
-/* ===== Alerts ===== */
-.alert {
-  padding: 0.75rem 0.95rem;
-  border-radius: 10px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  margin: 0;
-}
-
-.alert-error {
-  background: var(--accent-bg);
-  border: 1px solid var(--accent-border);
-  border-left: 4px solid var(--accent);
-  color: var(--accent-hover);
-}
-
-/* ===== Full-width submit ===== */
 .btn-block {
   width: 100%;
   margin-top: 0.25rem;
 }
 
-/* ===== Footer link ===== */
 .auth-foot {
   margin: 1.5rem 0 0;
   text-align: center;
@@ -1457,39 +1609,7 @@ button:disabled {
   color: var(--accent-hover);
   border-bottom-color: var(--accent-hover);
 }
-/* Alert variants */
-.alert-info {
-  background: var(--secondary-bg);
-  border: 1px solid var(--secondary-border);
-  border-left: 4px solid var(--secondary);
-  color: var(--secondary);
-}
 
-.alert-success {
-  background: rgba(34, 139, 74, 0.12);
-  border: 1px solid rgba(34, 139, 74, 0.35);
-  border-left: 4px solid #22a05a;
-  color: #1d7a44;
-}
-
-/* (You already have .alert-error from the previous message) */
-
-/* Disabled button state */
-.btn:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-  transform: none;
-  filter: grayscale(0.2);
-}
-
-/* Dark mode success color needs a lift */
-@media (prefers-color-scheme: dark) {
-  .alert-success {
-    color: #7ddc9a;
-    background: rgba(34, 139, 74, 0.15);
-    border-color: rgba(125, 220, 154, 0.4);
-  }
-}
 /* ===== Service grid ===== */
 .service-grid {
   display: grid;
@@ -1507,8 +1627,7 @@ button:disabled {
   border-radius: 16px;
   padding: 1.75rem 1.6rem;
   box-shadow: var(--shadow);
-  transition: transform 0.25s ease, box-shadow 0.25s ease,
-    border-color 0.25s ease;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
 .service-card:hover {
@@ -1517,7 +1636,6 @@ button:disabled {
   box-shadow: var(--shadow-lg);
 }
 
-/* Featured card (Haircut + Beard) */
 .service-card.is-featured {
   border-color: var(--accent);
   box-shadow:
@@ -1531,11 +1649,7 @@ button:disabled {
   left: 1.5rem;
   padding: 0.25rem 0.75rem;
   border-radius: 999px;
-  background: linear-gradient(
-    135deg,
-    var(--barber-red-soft),
-    var(--barber-red)
-  );
+  background: linear-gradient(135deg, var(--barber-red-soft), var(--barber-red));
   color: #fff;
   font-size: 0.7rem;
   font-weight: 700;
@@ -1544,7 +1658,6 @@ button:disabled {
   box-shadow: 0 6px 14px -6px rgba(200, 16, 46, 0.6);
 }
 
-/* Icon badge */
 .service-icon {
   display: grid;
   place-items: center;
@@ -1558,16 +1671,11 @@ button:disabled {
 }
 
 .service-card.is-featured .service-icon {
-  background: linear-gradient(
-    135deg,
-    var(--barber-red-soft),
-    var(--barber-red)
-  );
+  background: linear-gradient(135deg, var(--barber-red-soft), var(--barber-red));
   color: #fff;
   box-shadow: 0 8px 18px -8px rgba(200, 16, 46, 0.55);
 }
 
-/* Title + description */
 .service-card h2 {
   font-size: 1.3rem;
   margin: 0 0 0.5rem;
@@ -1582,7 +1690,6 @@ button:disabled {
   flex: 1;
 }
 
-/* Meta row (price + duration) */
 .service-meta {
   display: flex;
   justify-content: space-between;
@@ -1607,7 +1714,6 @@ button:disabled {
   font-weight: 600;
 }
 
-/* CTA button inside card */
 .service-cta {
   text-align: center;
   text-decoration: none;
@@ -1628,7 +1734,6 @@ button:disabled {
   transform: none;
 }
 
-/* ===== Info strip ===== */
 .service-info {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -1655,7 +1760,8 @@ button:disabled {
   color: var(--text);
   opacity: 0.85;
 }
-/* ===== Navbar shell ===== */
+
+/* ===== Navbar ===== */
 .navbar {
   position: sticky;
   top: 0;
@@ -1676,7 +1782,6 @@ button:disabled {
   gap: 1rem;
 }
 
-/* ===== Logo ===== */
 .logo {
   display: inline-flex;
   align-items: center;
@@ -1714,7 +1819,6 @@ button:disabled {
   white-space: nowrap;
 }
 
-/* ===== Nav links ===== */
 .nav-links {
   display: flex;
   align-items: center;
@@ -1735,7 +1839,6 @@ button:disabled {
   color: var(--accent);
 }
 
-/* Active route underline */
 .nav-links a.active {
   color: var(--text-h);
   font-weight: 600;
@@ -1749,14 +1852,9 @@ button:disabled {
   bottom: -4px;
   height: 3px;
   border-radius: 3px;
-  background: linear-gradient(
-    90deg,
-    var(--barber-red),
-    var(--barber-blue)
-  );
+  background: linear-gradient(90deg, var(--barber-red), var(--barber-blue));
 }
 
-/* Divider between marketing links and auth links */
 .nav-divider {
   width: 1px;
   height: 20px;
@@ -1764,19 +1862,11 @@ button:disabled {
   margin: 0 0.25rem;
 }
 
-/* CTA-style link in nav */
 .nav-links .btn {
   padding: 0.5rem 1rem;
   font-size: 0.88rem;
 }
 
-.btn-sm {
-  padding: 0.5rem 1rem;
-  font-size: 0.88rem;
-  border-radius: 8px;
-}
-
-/* ===== Mobile menu button ===== */
 .menu-toggle {
   display: none;
   width: 42px;
@@ -1811,7 +1901,6 @@ button:disabled {
   transform: translateY(-6px) rotate(-45deg);
 }
 
-/* ===== Mobile ===== */
 @media (max-width: 820px) {
   .menu-toggle {
     display: flex;
@@ -1862,14 +1951,12 @@ button:disabled {
   }
 }
 
-/* ===== Dark mode ===== */
 @media (prefers-color-scheme: dark) {
   .navbar {
     background: rgba(15, 22, 35, 0.85);
   }
 }
 
-/* ===== Reduced motion ===== */
 @media (prefers-reduced-motion: reduce) {
   .logo-mark,
   .nav-links,
@@ -1878,7 +1965,8 @@ button:disabled {
     transition: none;
   }
 }
-/* ===== Footer shell ===== */
+
+/* ===== Footer ===== */
 .site-footer {
   position: relative;
   margin-top: 5rem;
@@ -1898,7 +1986,6 @@ button:disabled {
   background-clip: padding-box, border-box;
 }
 
-/* ===== Inner layout ===== */
 .footer-inner {
   max-width: 1080px;
   margin: 0 auto;
@@ -1908,7 +1995,6 @@ button:disabled {
   gap: 2.5rem;
 }
 
-/* ===== Brand column ===== */
 .footer-logo {
   display: inline-flex;
   align-items: center;
@@ -1951,7 +2037,6 @@ button:disabled {
   margin: 0;
 }
 
-/* ===== Column headings ===== */
 .footer-col h4 {
   font-family: var(--sans);
   font-size: 0.78rem;
@@ -1962,7 +2047,6 @@ button:disabled {
   margin: 0 0 1rem;
 }
 
-/* ===== Column lists ===== */
 .footer-col ul {
   list-style: none;
   padding: 0;
@@ -1984,13 +2068,11 @@ button:disabled {
   padding-left: 4px;
 }
 
-/* Contact items (not links) */
 .footer-contact li {
   font-size: 0.92rem;
   color: #b5bdcf;
 }
 
-/* ===== Bottom bar ===== */
 .footer-bottom {
   max-width: 1080px;
   margin: 0 auto;
@@ -2013,13 +2095,11 @@ button:disabled {
   color: var(--barber-red-soft);
 }
 
-/* ===== Responsive ===== */
 @media (max-width: 820px) {
   .footer-inner {
     grid-template-columns: 1fr 1fr;
     gap: 2rem;
   }
-
   .footer-brand {
     grid-column: 1 / -1;
   }
@@ -2029,19 +2109,19 @@ button:disabled {
   .footer-inner {
     grid-template-columns: 1fr;
   }
-
   .footer-bottom {
     flex-direction: column;
     text-align: center;
   }
 }
-/* ===== Reduced motion ===== */
+
 @media (prefers-reduced-motion: reduce) {
   .footer-logo-mark {
     animation: none;
   }
 }
-/* ===== Grouped by shop ===== */
+
+/* ===== Shop groups ===== */
 .shop-group {
   margin: 3rem 0;
 }
@@ -2073,10 +2153,11 @@ button:disabled {
   letter-spacing: 0.08em;
 }
 
-/* service-grid margin when inside a shop-group */
 .shop-group .service-grid {
   margin: 0;
 }
+
+/* ===== Misc dashboard utilities ===== */
 .field-row {
   display: flex;
   gap: 0.5rem;
@@ -2127,4 +2208,128 @@ button:disabled {
 
 .dash-actions {
   margin: 1rem 0 2rem;
+}
+/* ===== Appointment filter chips ===== */
+.filter-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0 0 1.25rem;
+}
+
+.filter-chip {
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.4rem 0.85rem;
+    border-radius: 999px;
+    background: var(--code-bg);
+    color: var(--text);
+    border: 1.5px solid var(--border);
+    cursor: pointer;
+    box-shadow: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: background 0.15s ease, color 0.15s ease,
+        border-color 0.15s ease;
+}
+
+.filter-chip:hover {
+    border-color: var(--accent-border);
+    color: var(--accent);
+    transform: none;
+    box-shadow: none;
+}
+
+.filter-chip.is-active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+}
+
+.filter-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.35rem;
+    height: 1.35rem;
+    padding: 0 0.35rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.22);
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+.filter-chip:not(.is-active) .filter-count {
+    background: var(--border);
+    color: var(--text-h);
+}
+.modal-body .form-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    margin-top: 1.25rem;
+}
+.modal-body .form-actions button {
+    width: 100%;
+}
+/* ===== Breaks: 7-day grid ===== */
+.day-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1rem;
+}
+
+.day-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding: 1rem 1.1rem;
+}
+
+.day-card .mini-head {
+    margin-bottom: 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px dashed var(--border);
+}
+
+.break-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    flex: 1;
+}
+
+.break-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.35rem 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.break-row:last-child {
+    border-bottom: none;
+}
+
+.break-info {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.85rem;
+}
+
+.break-info .muted {
+    font-size: 0.78rem;
+    opacity: 0.7;
+    margin: 0;
+}
+
+.day-add {
+    margin-top: auto;
+    align-self: flex-start;
 }

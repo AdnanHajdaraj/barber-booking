@@ -193,6 +193,56 @@ const updateServiceStatus = async (req, res) => {
         });
     }
 };
+const deleteService = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const barberResult = await db.query(
+            "SELECT id FROM barbers WHERE user_id = $1",
+            [req.user.id]
+        );
+
+        if (barberResult.rows.length === 0) {
+            return res.status(403).json({
+                message: "You are not registered as a barber"
+            });
+        }
+
+        const barberId = barberResult.rows[0].id;
+
+        const result = await db.query(
+            `DELETE FROM services
+             WHERE id = $1 AND barber_id = $2
+             RETURNING id`,
+            [id, barberId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                message: "Service not found"
+            });
+        }
+
+        res.json({
+            message: "Service deleted successfully"
+        });
+
+    } catch (error) {
+        console.error("Delete service error:", error);
+
+        // PostgreSQL FK violation
+        if (error.code === "23503") {
+            return res.status(409).json({
+                message:
+                    "Cannot delete: this service is used by existing appointments. Deactivate it instead."
+            });
+        }
+
+        res.status(500).json({
+            message: "Server error"
+        });
+    }
+};
 const getPublicServices = async (req, res) => {
     try {
         const { barberId } = req.params;
@@ -250,10 +300,12 @@ const getAllPublicServices = async (req, res) => {
     }
 };
 
+
 module.exports = {
     createService,
     getServices,
     updateService,
+    deleteService,
     updateServiceStatus,
     getPublicServices,
     getAllPublicServices

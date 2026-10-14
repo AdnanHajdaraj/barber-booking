@@ -3,6 +3,7 @@ const {
     createService,
     getServices,
     updateService,
+    deleteService,
     updateServiceStatus,
     getPublicServices,
     getAllPublicServices      // <-- add this
@@ -15,7 +16,9 @@ const router = express.Router();
 router.post("/", authenticateToken, createService);
 router.get("/", authenticateToken, getServices);
 router.put("/:id", authenticateToken, updateService);
+router.delete("/:id", authenticateToken, deleteService);
 router.patch("/:id/status", authenticateToken, updateServiceStatus);
+
 
 // Public routes (no auth)
 router.get("/public", getAllPublicServices);            // <-- new: ALL active services
